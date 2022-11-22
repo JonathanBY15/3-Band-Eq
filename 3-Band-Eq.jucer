@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="O7zLfZ" name="3-Band-Eq" projectType="audioplug" useAppConfig="0"
-              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
+              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" cppLanguageStandard="17">
   <MAINGROUP id="DlzsFj" name="3-Band-Eq">
     <GROUP id="{CF187FEB-4A5B-230E-56F3-895F4A21D089}" name="Source">
       <FILE id="dWBhsT" name="PluginProcessor.cpp" compile="1" resource="0"
