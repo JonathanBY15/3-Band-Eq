@@ -192,22 +192,22 @@ juce::AudioProcessorValueTreeState::ParameterLayout _3BandEqAudioProcessor::crea
     // (20 Hz to 20000 Hz), (1 interval Value) (No Skew[1.f]) (Start at 20Hz)
     layout.add(std::make_unique<juce::AudioParameterFloat>("LowCut Freq",
                                                            "LowCut Freq", 
-                                                           juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f, false),
+                                                           juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f, false),
                                                            20.f));
 
     // High Cut Frequency
     // (20 Hz to 20000 Hz), (1 interval Value) (No Skew[1.f]) (Start at 20000Hz)
     layout.add(std::make_unique<juce::AudioParameterFloat>("HighCut Freq",
                                                            "HighCut Freq",
-                                                           juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f, false),
+                                                           juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f, false),
                                                            20000.f));
 
     // Peak Frequency
     // (20 Hz to 20000 Hz), (1 interval Value) (No Skew[1.f]) (Start at 800Hz)
     layout.add(std::make_unique<juce::AudioParameterFloat>("Peak Freq",
                                                            "Peak Freq",
-                                                           juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f, false),
-                                                           800.f));
+                                                           juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f, false),
+                                                           600.f));
 
     // Peak Gain
     // (-24 DB to 24 DB), (0.5 interval Value) (No Skew[1.f]) (Start at 0 DB)
