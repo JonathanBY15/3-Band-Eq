@@ -95,6 +95,22 @@ void _3BandEqAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlo
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+
+    juce::dsp::ProcessSpec spec;
+    
+    // Max number of samples that will be processed at once
+    spec.maximumBlockSize = samplesPerBlock;
+
+    // Number of channels
+    spec.numChannels = 1;
+
+    // Sample Rate
+    spec.sampleRate = sampleRate;
+
+    // Pass spec to each chain
+    leftChain.prepare(spec);
+    rightChain.prepare(spec);
+
 }
 
 void _3BandEqAudioProcessor::releaseResources()
@@ -144,18 +160,22 @@ void _3BandEqAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
+    // Create audio block
+    juce::dsp::AudioBlock<float> block(buffer);
 
-        // ..do something to the data...
-    }
+    // Represent left and right channels with audio blocks
+    auto leftBlock = block.getSingleChannelBlock(0);
+    auto rightBlock = block.getSingleChannelBlock(1);
+
+    // Left and Right context
+    juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
+    juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
+
+    // Pass context to left and right filter chains
+    leftChain.process(leftContext);
+    rightChain.process(rightContext);
+
+
 }
 
 //==============================================================================
@@ -189,21 +209,21 @@ juce::AudioProcessorValueTreeState::ParameterLayout _3BandEqAudioProcessor::crea
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
     // Low Cut Frequency
-    // (20 Hz to 20000 Hz), (1 interval Value) (No Skew[1.f]) (Start at 20Hz)
+    // (20 Hz to 20000 Hz), (1 interval Value) (Skew 0.25) (Start at 20Hz)
     layout.add(std::make_unique<juce::AudioParameterFloat>("LowCut Freq",
                                                            "LowCut Freq", 
                                                            juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f, false),
                                                            20.f));
 
     // High Cut Frequency
-    // (20 Hz to 20000 Hz), (1 interval Value) (No Skew[1.f]) (Start at 20000Hz)
+    // (20 Hz to 20000 Hz), (1 interval Value) (Skew 0.25) (Start at 20000Hz)
     layout.add(std::make_unique<juce::AudioParameterFloat>("HighCut Freq",
                                                            "HighCut Freq",
                                                            juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f, false),
                                                            20000.f));
 
     // Peak Frequency
-    // (20 Hz to 20000 Hz), (1 interval Value) (No Skew[1.f]) (Start at 600Hz)
+    // (20 Hz to 20000 Hz), (1 interval Value) (Skew 0.25) (Start at 600Hz)
     layout.add(std::make_unique<juce::AudioParameterFloat>("Peak Freq",
                                                            "Peak Freq",
                                                            juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f, false),
