@@ -96,6 +96,7 @@ void _3BandEqAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlo
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
 
+    // Prepare processing chain
     juce::dsp::ProcessSpec spec;
     
     // Max number of samples that will be processed at once
@@ -111,6 +112,20 @@ void _3BandEqAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlo
     leftChain.prepare(spec);
     rightChain.prepare(spec);
 
+
+    // Peak Coefficients
+    auto chainParameters = getChainParameters(apvts);
+
+    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+        sampleRate, 
+        chainParameters.peakFreq, 
+        chainParameters.peakQuality, 
+        juce::Decibels::decibelsToGain(chainParameters.peakGain)
+    );
+
+    // Access processing chain links
+    *leftChain.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
+    *rightChain.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
 }
 
 void _3BandEqAudioProcessor::releaseResources()
@@ -160,6 +175,27 @@ void _3BandEqAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
+
+
+
+    // Peak Coefficients
+    auto chainParameters = getChainParameters(apvts);
+
+    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+        getSampleRate(),
+        chainParameters.peakFreq,
+        chainParameters.peakQuality,
+        juce::Decibels::decibelsToGain(chainParameters.peakGain)
+    );
+
+    // Access processing chain links
+    *leftChain.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
+    *rightChain.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
+
+
+
+
+
     // Create audio block
     juce::dsp::AudioBlock<float> block(buffer);
 
@@ -203,6 +239,22 @@ void _3BandEqAudioProcessor::setStateInformation (const void* data, int sizeInBy
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
 }
+
+ChainParameters getChainParameters(juce::AudioProcessorValueTreeState& apvts)
+{
+    ChainParameters parameters;
+
+    parameters.lowCutFreq = apvts.getRawParameterValue("LowCut Freq")->load();
+    parameters.highCutFreq = apvts.getRawParameterValue("HighCut Freq")->load();
+    parameters.peakFreq = apvts.getRawParameterValue("Peak Freq")->load();
+    parameters.peakGain = apvts.getRawParameterValue("Peak Gain")->load();
+    parameters.peakQuality = apvts.getRawParameterValue("Peak Quality")->load();
+    parameters.lowCutSlope = apvts.getRawParameterValue("LowCut Slope")->load();
+    parameters.highCutSlope = apvts.getRawParameterValue("HighCut Slope")->load();
+
+    return parameters;
+}
+
 
 juce::AudioProcessorValueTreeState::ParameterLayout _3BandEqAudioProcessor::createParameterLayout()
 {

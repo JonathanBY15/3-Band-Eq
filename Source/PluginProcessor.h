@@ -10,6 +10,18 @@
 
 #include <JuceHeader.h>
 
+// Represent all parameter values
+struct ChainParameters
+{
+    float peakFreq{ 0 }, peakGain{ 0 }, peakQuality{ 1.f };
+    float lowCutFreq{ 0 }, highCutFreq{ 0 };
+    int lowCutSlope{ 0 }, highCutSlope{ 0 };
+};
+
+// Get parameter values
+ChainParameters getChainParameters(juce::AudioProcessorValueTreeState& apvts);
+
+
 //==============================================================================
 /**
 */
@@ -75,6 +87,13 @@ private:
     MonoChain leftChain, rightChain;
 
 
+    // Declare positions of links in processing chain
+    enum ChainPositions
+    {
+        LowCut,
+        Peak,
+        HighCut
+    };
 
 
 
