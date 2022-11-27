@@ -20,10 +20,10 @@
           uiLastY_Normal="182" uiopen_Normal="0">
     <PLUGIN name="vstPlayer" format="VST3" category="Instrument|Synth" manufacturer="yourcompany"
             version="2.3.4" file="C:\Users\Jonathan Bar&#305;&#351; Y\Desktop\AudioPlayer\vstPlayer.vst3"
-            uniqueId="8fdefd46" isInstrument="1" fileTime="17ad9dfbe48" infoUpdateTime="184a4f6e7a1"
+            uniqueId="8fdefd46" isInstrument="1" fileTime="17ad9dfbe48" infoUpdateTime="184b8220b72"
             numInputs="0" numOutputs="0" isShell="0" hasARAExtension="0"
             uid="ee63cfc"/>
-    <STATE>775.VMjLg3u....O+fWarAhckI2bo8la8HRLt.iHfTlai8FYo41Y8HRUTYTK3HxO9.BOVMEUy.Ea0cVZtMEcgQWY9vSRC8Vav8lak4Fc9PSN23hUMczXWEjKt3hYt3hKt.kKt3hKt3BS5gEcyQjKtPDTwXTR5AkaA4hKtfjYikWTGIlKHYmKD4hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKAQjZUMTRSgzMC4hKtXWdOMCLFElYXcUV30zUZUGMV8DZDk1R1gjPHsFMwfUcQYkVzMlUOgFUEUkQvHjSncSZOYlcCE1YMczXlQ0UZc0ZFkkdmY0SnY1PLYGRBgDLqYjTqsVLY4VTW8DZTMDS1gjPHY2cVgEM2YkV4EkLSQGLogzcHIDR3UkQhsVQFMFNHIDSn4BZiU2cVM1bUY0SnQTZKYGRBgjcEY0X4UkQYgCRRwDZyLzS1cmUXQycVoUdQ01S2fkUZIWUFgDcEYUXqASZHMzaCcUUMcUV30zQWoDNrE1YQcjVmQiQHITQrIFaLgGS1QUdNwFS3wDLDkmSloVQWQTUwHVbQISX1cWUPASTVoUcAUTXms1UYg2cEozQQsFUu4hTLcmKogkcvXDRDAiQHM2M5g0ZEwVXu0jUKQmdFIVdHg2R4XWdKY2cVgEM2YkV4EUaOcyMBE1YMczX43hKt3hKt3hKt3hKt3FUUMTUDQEdqw1XmE0UYQTQFM1YAAkKAgDUjYWQwHVdAAkKAwjKtLlKt3hKt3hKt3hYRUUSTEETIckVwTjQisVTTgkdEYDOujzPu0Fbu4VYtQmO77hUSQ0LPwVcmklaSQWXzUlO..</STATE>
+    <STATE>1050.VMjLgDAA...O+fWarAhckI2bo8la8HRLt.iHfTlai8FYo41Y8HRUTYTK3HxO9.BOVMEUy.Ea0cVZtMEcgQWY9vSRC8Vav8lak4Fc9bCLy3hUMczXWEjKt3hYt3hKt.kKt3hKt3BS5gEcyQjKtfjcuYTR5AkaA4hKtfjYikWTGIlKHYmKD4hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKBciYUMTRSgjRG4hKtXWdOMCLFElYXcUV30zUZUGMV8DZDk1R1gjPHsFMwfUcQYkVzMlUOgFUEUkQvHjSncSZOYlcCE1YMczXlQ0UZc0ZFkkdmY0SnY1PLYGRBgDLqYjTqsVLY4VTW8DZTMDS1gjPHY2cVgEM2YkV4EkLSQGLogzcHIDR3UkQhsVQFMFNHIDSn4BZiU2cVM1bUY0SnQTZKYGRBgjcEY0X4UkQYgCRRwDZyLzS1cmUXQycVoUdQ01S2fkUZIWUFgDcEYUXqASZHMzaCcUUMcUV30zQWoDNrE1YQcjVmQiQHITQrIFaLgGS1QUdNwFS3wDLDkmSloVQWQTUwHVbQISX1cWUPASTVoUcAUTXms1UYg2cEozQQsFUu4hTLcmKogkcvXDRDAiQHM2M5g0ZEwVXu0jUKQmdFIVdHg2R4XWZY81cVkkYyXEVyUkUOgFSp4jXUAiXqkjLhI1a5EFcEYzXtUDagYFRTgEdYgGR44xTMYCV3gTdTMES13hTVIVTTkUdyYzX0EzQWETUGk0a3XDUxUjUjsVRGckalQDUu4hTLAiYogkcvXDRC0jTgYld3Ekb3DyXSEkLgQWUVsDc5YjX4gDdKkicok0a2YUVlMiUXMWUV8DZLolShUELhsVRxHlXuoWXzUjQi4VQrElYHQEV3kEdHkmKS0jMXgGR4Q0TLYiKRYkXQQUV4MmQiUWPGcUPUcTVugiQTIWQVQ1ZIczUrgCahYFQFgTdUECV0QiQYYldBgTdtHkTz0zQigWUWE1ZzXzXmcGaKMWPxvDZ2f1S2biPhIWQVQlbqEiX5QyPOUmcVgUdQ01St3hKt3hKt3hKt3hKJUELPUTPqI1aYcEV5UkQQcVTWgkKDAkKBs1QhcVSxHlKDAkKC4BTG4hKt3hKt3hKt3FUUMTUDQEdqw1XmE0UYQTQFM1YAwyKIMzasA2atUlaz4COuX0TTMCTrU2Yo41TzEFck4C.</STATE>
     <LAYOUT>
       <INPUTS>
         <BUS index="0" layout="L R"/>
@@ -37,7 +37,7 @@
           uiLastY_Normal="401" uiopen_Normal="0">
     <PLUGIN name="3-Band-Eq" format="VST3" category="Fx" manufacturer="yourcompany"
             version="1.0.0" file="C:\Users\Jonathan Bar&#305;&#351; Y\Desktop\Coding\Fork_Clones\3-Band-Eq\Builds\VisualStudio2022\x64\Debug\VST3\3-Band-Eq.vst3"
-            uniqueId="fc6bec21" isInstrument="0" fileTime="184a430dd14" infoUpdateTime="184a4f6e7a3"
+            uniqueId="fc6bec21" isInstrument="0" fileTime="184b530ebb9" infoUpdateTime="184b8220b73"
             numInputs="2" numOutputs="2" isShell="0" hasARAExtension="0"
             uid="e9573fff"/>
     <STATE>191.VMjLgXK....O+fWarAhckI2bo8la8HRLt.iHfTlai8FYo41Y8HRUTYTK3HxO9.BOVMEUy.Ea0cVZtMEcgQWY9vSRC8Vav8lak4Fc9XCLt3hKt3hKt3hKt3hYRUUSTEETIckVwTjQisVTTgkdEYjKAQjYPQSPWgUdMcjKAQjct3hdA4hKt3hKt3hKtnTUv.UQAslXuk0UXoWUFE0YQcEV77RRC8Vav8lak4Fc9vyKVMEUy.Ea0cVZtMEcgQWY9..</STATE>
