@@ -29,6 +29,23 @@ struct ChainParameters
 // Get parameter values
 ChainParameters getChainParameters(juce::AudioProcessorValueTreeState& apvts);
 
+// Peak Filter
+using Filter = juce::dsp::IIR::Filter<float>;
+
+// Cut Filter (A Filter for each db/Oct value)
+using CutFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter>;
+
+// Mono signal path (Low Cut, Peak, High Cut)
+using MonoChain = juce::dsp::ProcessorChain<CutFilter, Filter, CutFilter>;
+
+// Declare positions of links in processing chain
+enum ChainPositions
+{
+    LowCut,
+    Peak,
+    HighCut
+};
+
 
 //==============================================================================
 /**
@@ -82,30 +99,8 @@ public:
 
 private:
 
-    // Peak Filter
-    using Filter = juce::dsp::IIR::Filter<float>;
-
-    // Cut Filter (A Filter for each db/Oct value)
-    using CutFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter>;
-
-    // Mono signal path (Low Cut, Peak, High Cut)
-    using MonoChain = juce::dsp::ProcessorChain<CutFilter, Filter, CutFilter>;
-
     // Create a left and right MonoChain instance to do Stereo Processing
     MonoChain leftChain, rightChain;
-
-
-    // Declare positions of links in processing chain
-    enum ChainPositions
-    {
-        LowCut,
-        Peak,
-        HighCut
-    };
-
-
-
-
 
 
     //==============================================================================

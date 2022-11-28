@@ -41,12 +41,109 @@ _3BandEqAudioProcessorEditor::~_3BandEqAudioProcessorEditor()
 //==============================================================================
 void _3BandEqAudioProcessorEditor::paint (juce::Graphics& g)
 {
+    using namespace juce;
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+    g.fillAll (Colours::cadetblue);
 
-    g.setColour (juce::Colours::white);
-    g.setFont (15.0f);
-    //g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
+    auto bounds = getLocalBounds();
+
+    // Audio curve area
+    auto audioCurveArea = bounds.removeFromTop(bounds.getHeight() * 0.33);
+
+    // Width of audio curve area
+    auto width = audioCurveArea.getWidth();
+
+    // Height of audio curve area
+    auto height = audioCurveArea.getHeight();
+
+    // Get chain elements for each filter
+    auto& lowcut = monoChain.get<ChainPositions::LowCut>();
+    auto& peak = monoChain.get<ChainPositions::Peak>();
+    auto& highcut = monoChain.get<ChainPositions::HighCut>();
+
+    auto sampleRate = audioProcessor.getSampleRate();
+
+    std::vector<double> magnitudes;
+    magnitudes.resize(width);
+
+    for ( int i = 0; i > width; ++i )
+    {
+        // Gain Magnitude
+        double magnitude = 1.f;
+        // Frequency
+        auto freq = mapToLog10( (double(i) / double(width) ), 20.0, 20000.0);
+
+        // Check if Peak is bypassed
+        if ( !monoChain.isBypassed<ChainPositions::Peak>() )
+        {
+            magnitude *= peak.coefficients->getMagnitudeForFrequency(freq, sampleRate);
+        }
+
+        // Check if Low Cut is bypassed
+        if (!lowcut.isBypassed<0>())
+        {
+            magnitude *= lowcut.get<0>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
+        }
+        if (!lowcut.isBypassed<1>())
+        {
+            magnitude *= lowcut.get<1>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
+        }
+        if (!lowcut.isBypassed<2>())
+        {
+            magnitude *= lowcut.get<2>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
+        }
+        if (!lowcut.isBypassed<3>())
+        {
+            magnitude *= lowcut.get<3>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
+        }
+
+        // Check if High Cut is bypassed
+        if (!highcut.isBypassed<0>())
+        {
+            magnitude *= highcut.get<0>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
+        }
+        if (!highcut.isBypassed<1>())
+        {
+            magnitude *= highcut.get<1>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
+        }
+        if (!highcut.isBypassed<2>())
+        {
+            magnitude *= highcut.get<2>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
+        }
+        if (!highcut.isBypassed<3>())
+        {
+            magnitude *= highcut.get<3>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
+        }
+
+        // Convert Gain Magnitude to Decibels
+        magnitudes[i] = Decibels::gainToDecibels(magnitude);
+
+    }
+
+    Path audioFrequencyCurve;
+
+    const double minOutput = audioCurveArea.getBottom();
+    const double maxOutput = audioCurveArea.getY();
+
+    auto map = [minOutput, maxOutput](double input)
+    {
+        return jmap(input, -24.0, 24.0, minOutput, maxOutput);
+    };
+
+    audioFrequencyCurve.startNewSubPath(audioCurveArea.getX(), map(magnitudes.front()));
+
+    for (int i = 1; i < magnitudes.size(); ++i)
+    {
+        audioFrequencyCurve.lineTo(audioCurveArea.getX() + i, map(magnitudes[i]));
+    }
+
+    // Draw box for the frequency curve
+    g.setColour(Colours::black);
+    g.drawRoundedRectangle(audioCurveArea.toFloat(), 2.f, 2.f);
+
+    // Draw the frequency curve
+    g.setColour(Colours::beige);
+    g.strokePath(audioFrequencyCurve, PathStrokeType(2.f));
 }
 
 void _3BandEqAudioProcessorEditor::resized()
