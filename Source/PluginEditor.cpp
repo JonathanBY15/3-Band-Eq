@@ -176,6 +176,21 @@ void _3BandEqAudioProcessorEditor::resized()
 
 }
 
+void _3BandEqAudioProcessorEditor::parameterValueChanged(int parameterIndex, float newValue)
+{
+    parametersChanged.set(true);
+}
+
+// Check if parameters were changed in the callback
+void _3BandEqAudioProcessorEditor::timerCallback()
+{
+    if (parametersChanged.compareAndSetBool(false, true))
+    {
+        // Draw new frequency curve
+
+    }
+}
+
 std::vector<juce::Component*> _3BandEqAudioProcessorEditor::getComponents()
 {
     return

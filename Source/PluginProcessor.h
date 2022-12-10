@@ -23,7 +23,7 @@ struct ChainParameters
 {
     float peakFreq{ 0 }, peakGain{ 0 }, peakQuality{ 1.f };
     float lowCutFreq{ 0 }, highCutFreq{ 0 };
-    int lowCutSlope{ Slope::Slope_12 }, highCutSlope{ Slope::Slope_12 };
+    Slope lowCutSlope{ Slope::Slope_12 }, highCutSlope{ Slope::Slope_12 };
 };
 
 // Get parameter values
@@ -92,6 +92,55 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+
+    void updatePeakFilter(const ChainParameters& chainParameters);
+    using Coefficients = Filter::CoefficientsPtr;
+    static void updateCoefficients(Coefficients& old, const Coefficients& replacements);
+
+    template<int Idx, typename ChainType, typename CoefficientType>
+    void update(ChainType& chain, const CoefficientType& lowCutCoefficients)
+    {
+        updateCoefficients(chain.template get<Idx>().coefficients, lowCutCoefficients[Idx]);
+        chain.template setBypassed<Idx>(false);
+    }
+
+    template<typename ChainType, typename CoefficientType>
+    void updateCutFilter(ChainType& leftLowCut, const CoefficientType& lowCutCoefficients, const Slope& lowCutSlope)
+    {
+        // LowCut Coefficients ---------------------------------------------------------------------------------------------------
+        //------------------------------------------------------------------------------------------------------------------------
+
+        // Bypass slope values (0, 1, 2, 3)
+        leftLowCut.setBypassed<0>(true);
+        leftLowCut.setBypassed<1>(true);
+        leftLowCut.setBypassed<2>(true);
+        leftLowCut.setBypassed<3>(true);
+
+        // Activate slope
+        switch (lowCutSlope)
+        {
+            case Slope_48:
+            {
+                update<3>(leftLowCut, lowCutCoefficients);
+            }
+            case Slope_36:
+            {
+                update<2>(leftLowCut, lowCutCoefficients);
+            }
+            case Slope_24:
+            {
+                update<1>(leftLowCut, lowCutCoefficients);
+            }
+            case Slope_12:
+            {
+                update<0>(leftLowCut, lowCutCoefficients);
+            }
+        }
+    }
+
+    void updateLowCutFilter(const ChainParameters& chainParameters);
+    void updateHighCutFilter(const ChainParameters& chainParameters);
+    void updateFilters();
 
     static juce::AudioProcessorValueTreeState::ParameterLayout
         createParameterLayout();
