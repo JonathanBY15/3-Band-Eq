@@ -46,14 +46,85 @@ enum ChainPositions
     HighCut
 };
 
+using Coefficients = Filter::CoefficientsPtr;
+void updateCoefficients(Coefficients& old, const Coefficients& replacements);
+
+// Create Peak Filter
+Coefficients createPeakFilter(const ChainParameters& chainParameters, double sampleRate);
+
+template<int Idx, typename ChainType, typename CoefficientType>
+void update(ChainType& chain, const CoefficientType& lowCutCoefficients)
+{
+    updateCoefficients(chain.template get<Idx>().coefficients, lowCutCoefficients[Idx]);
+    chain.template setBypassed<Idx>(false);
+}
+
+// Cut Coefficients
+template<typename ChainType, typename CoefficientType>
+void updateCutFilter(ChainType& chain, const CoefficientType& coefficients, const Slope& slope)
+{
+    // LowCut Coefficients ---------------------------------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------------------------------------------
+
+    // Bypass slope values (0, 1, 2, 3)
+    chain.template setBypassed<0>(true);
+    chain.template setBypassed<1>(true);
+    chain.template setBypassed<2>(true);
+    chain.template setBypassed<3>(true);
+
+    // Activate slope
+    switch (slope)
+    {
+        case Slope_48:
+        {
+            update<3>(chain, coefficients);
+        }
+        case Slope_36:
+        {
+            update<2>(chain, coefficients);
+        }
+        case Slope_24:
+        {
+            update<1>(chain, coefficients);
+        }
+        case Slope_12:
+        {
+            update<0>(chain, coefficients);
+        }
+    }
+}
+
+// Create Low Cut Filter
+inline auto createLowCutFilter(const ChainParameters& chainParameters, double sampleRate)
+{
+    return juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(
+        chainParameters.lowCutFreq,
+        sampleRate,
+        (chainParameters.lowCutSlope + 1) * 2
+    );
+}
+
+// Create High Cut Filter
+inline auto createHighCutFilter(const ChainParameters& chainParameters, double sampleRate)
+{
+    return juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(
+        chainParameters.highCutFreq,
+        sampleRate,
+        (chainParameters.highCutSlope + 1) * 2
+    );
+}
+
+
+
+
+
+
+
 
 //==============================================================================
 /**
 */
 class _3BandEqAudioProcessor  : public juce::AudioProcessor
-                            #if JucePlugin_Enable_ARA
-                             , public juce::AudioProcessorARAExtension
-                            #endif
 {
 public:
     //==============================================================================
@@ -93,55 +164,6 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    void updatePeakFilter(const ChainParameters& chainParameters);
-    using Coefficients = Filter::CoefficientsPtr;
-    static void updateCoefficients(Coefficients& old, const Coefficients& replacements);
-
-    template<int Idx, typename ChainType, typename CoefficientType>
-    void update(ChainType& chain, const CoefficientType& lowCutCoefficients)
-    {
-        updateCoefficients(chain.template get<Idx>().coefficients, lowCutCoefficients[Idx]);
-        chain.template setBypassed<Idx>(false);
-    }
-
-    template<typename ChainType, typename CoefficientType>
-    void updateCutFilter(ChainType& leftLowCut, const CoefficientType& lowCutCoefficients, const Slope& lowCutSlope)
-    {
-        // LowCut Coefficients ---------------------------------------------------------------------------------------------------
-        //------------------------------------------------------------------------------------------------------------------------
-
-        // Bypass slope values (0, 1, 2, 3)
-        leftLowCut.setBypassed<0>(true);
-        leftLowCut.setBypassed<1>(true);
-        leftLowCut.setBypassed<2>(true);
-        leftLowCut.setBypassed<3>(true);
-
-        // Activate slope
-        switch (lowCutSlope)
-        {
-            case Slope_48:
-            {
-                update<3>(leftLowCut, lowCutCoefficients);
-            }
-            case Slope_36:
-            {
-                update<2>(leftLowCut, lowCutCoefficients);
-            }
-            case Slope_24:
-            {
-                update<1>(leftLowCut, lowCutCoefficients);
-            }
-            case Slope_12:
-            {
-                update<0>(leftLowCut, lowCutCoefficients);
-            }
-        }
-    }
-
-    void updateLowCutFilter(const ChainParameters& chainParameters);
-    void updateHighCutFilter(const ChainParameters& chainParameters);
-    void updateFilters();
-
     static juce::AudioProcessorValueTreeState::ParameterLayout
         createParameterLayout();
     juce::AudioProcessorValueTreeState apvts{ *this, nullptr, "Parameters", createParameterLayout()};
@@ -151,6 +173,15 @@ private:
     // Create a left and right MonoChain instance to do Stereo Processing
     MonoChain leftChain, rightChain;
 
+    void updatePeakFilter(const ChainParameters& chainParameters);
+
+    
+
+
+    void updateLowCutFilter(const ChainParameters& chainParameters);
+    void updateHighCutFilter(const ChainParameters& chainParameters);
+
+    void updateFilters();
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (_3BandEqAudioProcessor)

@@ -31,18 +31,32 @@ highCutSlopeKnobAtt(audioProcessor.apvts, "HighCut Slope", highCutSlopeKnob)
         addAndMakeVisible(comp);
     }
 
+    // Add listener to parameters
+    const auto& parameters = audioProcessor.getParameters();
+    for (auto parameter : parameters)
+    {
+        parameter->addListener(this);
+    }
+
+    startTimerHz(60);
+
     setSize (600, 500);
 }
 
 _3BandEqAudioProcessorEditor::~_3BandEqAudioProcessorEditor()
 {
+    // Remove listener
+    const auto& parameters = audioProcessor.getParameters();
+    for (auto parameter : parameters)
+    {
+        parameter->removeListener(this);
+    }
 }
 
 //==============================================================================
 void _3BandEqAudioProcessorEditor::paint (juce::Graphics& g)
 {
     using namespace juce;
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (Colours::cadetblue);
 
     auto bounds = getLocalBounds();
@@ -66,7 +80,7 @@ void _3BandEqAudioProcessorEditor::paint (juce::Graphics& g)
     std::vector<double> magnitudes;
     magnitudes.resize(width);
 
-    for ( int i = 0; i > width; ++i )
+    for ( int i = 0; i < width; ++i )
     {
         // Gain Magnitude
         double magnitude = 1.f;
@@ -186,9 +200,22 @@ void _3BandEqAudioProcessorEditor::timerCallback()
 {
     if (parametersChanged.compareAndSetBool(false, true))
     {
-        // Draw new frequency curve
+        // Update monoChain
+        auto chainParameters = getChainParameters(audioProcessor.apvts);
 
+        auto peakCoefficients = createPeakFilter(chainParameters, audioProcessor.getSampleRate());
+        updateCoefficients(monoChain.get<ChainPositions::Peak>().coefficients, peakCoefficients);
+
+        auto lowCutCoefficients = createLowCutFilter(chainParameters, audioProcessor.getSampleRate());
+        auto highCutCoefficients = createHighCutFilter(chainParameters, audioProcessor.getSampleRate());
+
+        updateCutFilter(monoChain.get<ChainPositions::LowCut>(), lowCutCoefficients, chainParameters.lowCutSlope);
+        updateCutFilter(monoChain.get<ChainPositions::HighCut>(), highCutCoefficients, chainParameters.highCutSlope);
+
+        // Draw updated frequency curve
+        repaint();
     }
+    
 }
 
 std::vector<juce::Component*> _3BandEqAudioProcessorEditor::getComponents()
