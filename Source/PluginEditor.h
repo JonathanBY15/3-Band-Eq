@@ -21,22 +21,35 @@ struct CustomKnob : juce::Slider
     };
 };
 
-
-//==============================================================================
-/**
-*/
-class _3BandEqAudioProcessorEditor  : public juce::AudioProcessorEditor,
-juce::AudioProcessorParameter::Listener,
-juce::Timer
+struct FreqCurveComponent : juce::Component,
+    juce::AudioProcessorParameter::Listener,
+    juce::Timer
 {
-public:
-    _3BandEqAudioProcessorEditor (_3BandEqAudioProcessor&);
-    ~_3BandEqAudioProcessorEditor() override;
+    FreqCurveComponent(_3BandEqAudioProcessor&);
+    ~FreqCurveComponent() override;
 
     void parameterValueChanged(int parameterIndex, float newValue) override;
     void parameterGestureChanged(int parameterIndex, bool gestureIsStarting) override { }
 
     void timerCallback() override;
+
+    void paint(juce::Graphics& g) override;
+
+private:
+    _3BandEqAudioProcessor& audioProcessor;
+    juce::Atomic<bool> parametersChanged{ false };
+
+    MonoChain monoChain;
+};
+
+//==============================================================================
+/**
+*/
+class _3BandEqAudioProcessorEditor  : public juce::AudioProcessorEditor
+{
+public:
+    _3BandEqAudioProcessorEditor (_3BandEqAudioProcessor&);
+    ~_3BandEqAudioProcessorEditor() override;
 
     void paint(juce::Graphics&) override;
     void resized() override;
@@ -44,12 +57,11 @@ public:
 private:
     _3BandEqAudioProcessor& audioProcessor;
 
-    juce::Atomic<bool> parametersChanged { false };
-
-    MonoChain monoChain;
-
     // Declare Knobs
     CustomKnob peakFreqKnob, peakGainKnob, peakQualityKnob, lowCutFreqKnob, highCutFreqKnob, lowCutSlopeKnob, highCutSlopeKnob;
+
+    // Declare Frequency Curve Component
+    FreqCurveComponent freqCurveComponent;
 
     // Alias Attachment
     using APVTS = juce::AudioProcessorValueTreeState;

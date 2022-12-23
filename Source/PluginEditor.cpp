@@ -9,28 +9,8 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-//==============================================================================
-_3BandEqAudioProcessorEditor::_3BandEqAudioProcessorEditor(_3BandEqAudioProcessor& p)
-    : AudioProcessorEditor(&p), audioProcessor(p),
-peakFreqKnobAtt(audioProcessor.apvts, "Peak Freq", peakFreqKnob),
-peakGainKnobAtt(audioProcessor.apvts, "Peak Gain", peakGainKnob),
-peakQualityKnobAtt(audioProcessor.apvts, "Peak Quality", peakQualityKnob),
-lowCutFreqKnobAtt(audioProcessor.apvts, "LowCut Freq", lowCutFreqKnob),
-lowCutSlopeKnobAtt(audioProcessor.apvts, "LowCut Slope", lowCutSlopeKnob),
-highCutFreqKnobAtt(audioProcessor.apvts, "HighCut Freq", highCutFreqKnob),
-highCutSlopeKnobAtt(audioProcessor.apvts, "HighCut Slope", highCutSlopeKnob)
-
-
-
+FreqCurveComponent::FreqCurveComponent(_3BandEqAudioProcessor& p) : audioProcessor(p)
 {
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
-
-    for (auto* comp : getComponents()) 
-    {
-        addAndMakeVisible(comp);
-    }
-
     // Add listener to parameters
     const auto& parameters = audioProcessor.getParameters();
     for (auto parameter : parameters)
@@ -40,10 +20,10 @@ highCutSlopeKnobAtt(audioProcessor.apvts, "HighCut Slope", highCutSlopeKnob)
 
     startTimerHz(60);
 
-    setSize (600, 500);
+    setSize(600, 500);
 }
 
-_3BandEqAudioProcessorEditor::~_3BandEqAudioProcessorEditor()
+FreqCurveComponent::~FreqCurveComponent()
 {
     // Remove listener
     const auto& parameters = audioProcessor.getParameters();
@@ -53,22 +33,47 @@ _3BandEqAudioProcessorEditor::~_3BandEqAudioProcessorEditor()
     }
 }
 
-//==============================================================================
-void _3BandEqAudioProcessorEditor::paint (juce::Graphics& g)
+void FreqCurveComponent::parameterValueChanged(int parameterIndex, float newValue)
+{
+    parametersChanged.set(true);
+}
+
+// Check if parameters were changed in the callback
+void FreqCurveComponent::timerCallback()
+{
+    if (parametersChanged.compareAndSetBool(false, true))
+    {
+        // Update monoChain
+        auto chainParameters = getChainParameters(audioProcessor.apvts);
+
+        auto peakCoefficients = createPeakFilter(chainParameters, audioProcessor.getSampleRate());
+        updateCoefficients(monoChain.get<ChainPositions::Peak>().coefficients, peakCoefficients);
+
+        auto lowCutCoefficients = createLowCutFilter(chainParameters, audioProcessor.getSampleRate());
+        auto highCutCoefficients = createHighCutFilter(chainParameters, audioProcessor.getSampleRate());
+
+        updateCutFilter(monoChain.get<ChainPositions::LowCut>(), lowCutCoefficients, chainParameters.lowCutSlope);
+        updateCutFilter(monoChain.get<ChainPositions::HighCut>(), highCutCoefficients, chainParameters.highCutSlope);
+
+        // Draw updated frequency curve
+        repaint();
+    }
+
+}
+
+void FreqCurveComponent::paint(juce::Graphics& g)
 {
     using namespace juce;
-    g.fillAll (Colours::cadetblue);
-
-    auto bounds = getLocalBounds();
+    g.fillAll(Colours::cadetblue);
 
     // Audio curve area
-    auto audioCurveArea = bounds.removeFromTop(bounds.getHeight() * 0.33);
+    auto freqCurveArea = getLocalBounds();
 
     // Width of audio curve area
-    auto width = audioCurveArea.getWidth();
+    auto width = freqCurveArea.getWidth();
 
     // Height of audio curve area
-    auto height = audioCurveArea.getHeight();
+    auto height = freqCurveArea.getHeight();
 
     // Get chain elements for each filter
     auto& lowcut = monoChain.get<ChainPositions::LowCut>();
@@ -80,15 +85,15 @@ void _3BandEqAudioProcessorEditor::paint (juce::Graphics& g)
     std::vector<double> magnitudes;
     magnitudes.resize(width);
 
-    for ( int i = 0; i < width; ++i )
+    for (int i = 0; i < width; ++i)
     {
         // Gain Magnitude
         double magnitude = 1.f;
         // Frequency
-        auto freq = mapToLog10( (double(i) / double(width) ), 20.0, 20000.0);
+        auto freq = mapToLog10((double(i) / double(width)), 20.0, 20000.0);
 
         // Check if Peak is bypassed
-        if ( !monoChain.isBypassed<ChainPositions::Peak>() )
+        if (!monoChain.isBypassed<ChainPositions::Peak>())
         {
             magnitude *= peak.coefficients->getMagnitudeForFrequency(freq, sampleRate);
         }
@@ -136,28 +141,66 @@ void _3BandEqAudioProcessorEditor::paint (juce::Graphics& g)
 
     Path audioFrequencyCurve;
 
-    const double minOutput = audioCurveArea.getBottom();
-    const double maxOutput = audioCurveArea.getY();
+    const double minOutput = freqCurveArea.getBottom();
+    const double maxOutput = freqCurveArea.getY();
 
     auto map = [minOutput, maxOutput](double input)
     {
         return jmap(input, -24.0, 24.0, minOutput, maxOutput);
     };
 
-    audioFrequencyCurve.startNewSubPath(audioCurveArea.getX(), map(magnitudes.front()));
+    audioFrequencyCurve.startNewSubPath(freqCurveArea.getX(), map(magnitudes.front()));
 
     for (int i = 1; i < magnitudes.size(); ++i)
     {
-        audioFrequencyCurve.lineTo(audioCurveArea.getX() + i, map(magnitudes[i]));
+        audioFrequencyCurve.lineTo(freqCurveArea.getX() + i, map(magnitudes[i]));
     }
 
     // Draw box for the frequency curve
     g.setColour(Colours::black);
-    g.drawRoundedRectangle(audioCurveArea.toFloat(), 2.f, 2.f);
+    g.drawRoundedRectangle(freqCurveArea.toFloat(), 2.f, 2.f);
 
     // Draw the frequency curve
     g.setColour(Colours::beige);
     g.strokePath(audioFrequencyCurve, PathStrokeType(2.f));
+}
+
+//==============================================================================
+_3BandEqAudioProcessorEditor::_3BandEqAudioProcessorEditor(_3BandEqAudioProcessor& p)
+    : AudioProcessorEditor(&p), audioProcessor(p),
+freqCurveComponent(audioProcessor),
+peakFreqKnobAtt(audioProcessor.apvts, "Peak Freq", peakFreqKnob),
+peakGainKnobAtt(audioProcessor.apvts, "Peak Gain", peakGainKnob),
+peakQualityKnobAtt(audioProcessor.apvts, "Peak Quality", peakQualityKnob),
+lowCutFreqKnobAtt(audioProcessor.apvts, "LowCut Freq", lowCutFreqKnob),
+lowCutSlopeKnobAtt(audioProcessor.apvts, "LowCut Slope", lowCutSlopeKnob),
+highCutFreqKnobAtt(audioProcessor.apvts, "HighCut Freq", highCutFreqKnob),
+highCutSlopeKnobAtt(audioProcessor.apvts, "HighCut Slope", highCutSlopeKnob)
+
+
+
+{
+    // Make sure that before the constructor has finished, you've set the
+    // editor's size to whatever you need it to be.
+
+    for (auto* comp : getComponents()) 
+    {
+        addAndMakeVisible(comp);
+    }
+
+    setSize (600, 500);
+}
+
+_3BandEqAudioProcessorEditor::~_3BandEqAudioProcessorEditor()
+{
+    
+}
+
+//==============================================================================
+void _3BandEqAudioProcessorEditor::paint (juce::Graphics& g)
+{
+    using namespace juce;
+    g.fillAll (Colours::cadetblue);
 }
 
 void _3BandEqAudioProcessorEditor::resized()
@@ -170,6 +213,8 @@ void _3BandEqAudioProcessorEditor::resized()
     auto bounds = getLocalBounds();
     
     auto audioCurveArea = bounds.removeFromTop(bounds.getHeight() * 0.33);
+
+    freqCurveComponent.setBounds(audioCurveArea);
 
     auto lowCutArea = bounds.removeFromLeft(bounds.getWidth() * 0.33);
     auto highCutArea = bounds.removeFromRight(bounds.getWidth() * 0.5);
@@ -190,34 +235,6 @@ void _3BandEqAudioProcessorEditor::resized()
 
 }
 
-void _3BandEqAudioProcessorEditor::parameterValueChanged(int parameterIndex, float newValue)
-{
-    parametersChanged.set(true);
-}
-
-// Check if parameters were changed in the callback
-void _3BandEqAudioProcessorEditor::timerCallback()
-{
-    if (parametersChanged.compareAndSetBool(false, true))
-    {
-        // Update monoChain
-        auto chainParameters = getChainParameters(audioProcessor.apvts);
-
-        auto peakCoefficients = createPeakFilter(chainParameters, audioProcessor.getSampleRate());
-        updateCoefficients(monoChain.get<ChainPositions::Peak>().coefficients, peakCoefficients);
-
-        auto lowCutCoefficients = createLowCutFilter(chainParameters, audioProcessor.getSampleRate());
-        auto highCutCoefficients = createHighCutFilter(chainParameters, audioProcessor.getSampleRate());
-
-        updateCutFilter(monoChain.get<ChainPositions::LowCut>(), lowCutCoefficients, chainParameters.lowCutSlope);
-        updateCutFilter(monoChain.get<ChainPositions::HighCut>(), highCutCoefficients, chainParameters.highCutSlope);
-
-        // Draw updated frequency curve
-        repaint();
-    }
-    
-}
-
 std::vector<juce::Component*> _3BandEqAudioProcessorEditor::getComponents()
 {
     return
@@ -228,6 +245,7 @@ std::vector<juce::Component*> _3BandEqAudioProcessorEditor::getComponents()
         &lowCutFreqKnob,
         &highCutFreqKnob,
         &lowCutSlopeKnob,
-        &highCutSlopeKnob
+        &highCutSlopeKnob,
+        &freqCurveComponent
     };
 }
