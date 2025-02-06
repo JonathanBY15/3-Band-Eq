@@ -1,11 +1,10 @@
 <a id="readme-top"></a>
 
 <!-- PROJECT LOGO -->
+# FineTune
 <br />
 
 <div align="center">
-  FineTune
-
   <p align="center" style="font-size: 24px">
     A lightweight 3-band equalizer audio plugin.
     <br />
@@ -57,10 +56,10 @@ Throughout college, I had a low-budget laptop that struggled with resource-heavy
 # Screenshots
 
 ### Main Interface
-<img src="path-to-screenshot1.png" height="505" width="900" alt="FineTune UI"/>
+<img src="finetune2.PNG" alt="FineTune UI"/>
 
-### Frequency Adjustments
-<img src="path-to-screenshot2.png" height="500" width="900" alt="EQ Adjustments"/>
+### Bypassed
+<img src="allbypass.PNG" alt="FineTune Bypassed"/>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -85,5 +84,4 @@ Throughout college, I had a low-budget laptop that struggled with resource-heavy
 2. Adjust the Low, Mid, and High frequency sliders to shape your sound.
 3. Use the bypass switch to compare before and after adjustments.
 4. Fine-tune your mix without worrying about CPU overload!
-
 
